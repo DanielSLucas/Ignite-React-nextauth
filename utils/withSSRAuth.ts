@@ -1,6 +1,6 @@
 import { GetServerSideProps, GetServerSidePropsContext, GetServerSidePropsResult } from "next";
-import { parseCookies } from "nookies";
-
+import { destroyCookie, parseCookies } from "nookies";
+import { AuthTokenError } from "../services/errors/AuthTokenError";
 
 // high order function
 // usar junto com o GetServerSideProps nas páginas que podem ser acessadas por visitantes 
@@ -16,7 +16,23 @@ export function withSSRAuth<T>(fn: GetServerSideProps<T>) {
         }
       }
     }
-
-    return await fn(ctx);
+    
+    try {
+      return await fn(ctx);
+    } catch (err) {
+      if (err instanceof AuthTokenError) {
+        destroyCookie(ctx, 'nextauth.token');
+        destroyCookie(ctx, 'nextauth.refreshToken');
+        
+        return {
+          redirect: {
+            destination: '/',
+            permanent: false
+          }
+        }
+      }
+      
+      throw err;
+    }
   }
 }
