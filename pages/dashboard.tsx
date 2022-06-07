@@ -1,5 +1,6 @@
 import type { NextPage } from "next";
 import { useContext, useEffect } from "react";
+import { Can } from "../components/Can";
 
 import { AuthContext } from "../context/AuthContext";
 import { useCan } from "../hooks/useCan";
@@ -9,11 +10,6 @@ import { withSSRAuth } from "../utils/withSSRAuth";
 
 const DashBoard: NextPage = () => {
   const { user } = useContext(AuthContext);
-  
-  const userCanSeeMetrics = useCan({
-    // permissions: ['metrics.list'],
-    roles: ['administrator', 'editor']
-  })
 
   useEffect(() => {
     api.get('/me')
@@ -25,7 +21,9 @@ const DashBoard: NextPage = () => {
     <>
       <h1>Dashboard: {user?.email}</h1>
       
-      {userCanSeeMetrics && <div>Métricas</div>}
+      <Can  permissions={["metrics.list"]}>
+        <div>Métricas</div>
+      </Can>
     </>
   )
 }
